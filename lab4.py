@@ -124,7 +124,7 @@ def lucas_kanade(img1, img2, keypoints, window_size=9):
         
         At = np.transpose(A)
         At_A = np.matmul(At, A)
-        x_hat = np.linalg.inv(At_A,np.matmul(At, b)) 
+        x_hat = np.matmul(np.linalg.inv(At_A),np.matmul(At, b))
         flow_vectors.append(x_hat)
     
 
