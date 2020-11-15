@@ -6,6 +6,7 @@ import numpy as np
 import random
 
 from time import time
+from skimage import filters
 
 
 # Part 1 
@@ -96,15 +97,35 @@ def lucas_kanade(img1, img2, keypoints, window_size=9):
     # For each [y, x] in keypoints, estimate flow vector [vy, vx]
     # using Lucas-Kanade method and append it to flow_vectors.
     for y, x in keypoints:
-        # Keypoints can be loacated between integer pixels (subpixel locations).
+        # Keypoints can be located between integer pixels (subpixel locations).
         # For simplicity, we round the keypoint coordinates to nearest integer.
         # In order to achieve more accurate results, image brightness at subpixel
         # locations can be computed using bilinear interpolation.
         y, x = int(round(y)), int(round(x))
 
         """ YOUR CODE STARTS HERE """
-
-
+        window_x = np.zeros((3,3))
+        window_y = np.zeros((3,3))
+        
+        start_y = y - int(window_size/2)
+        start_x = x - int(window_size/2)
+        end_y = y + int(window_size/2)
+        end_x = x + int(window_size/2)
+        
+        A = np.zeros((window_size*window_size, 2))
+        b = np.zeros(window_size*window_size)
+        index = 0
+        for i in range(start_y, end_y + 1, 1):
+            for j in range(start_x, end_x + 1, 1):
+                A[index][0] = Iy[i][j]
+                A[index][1] = Ix[i][j]
+                b[index] = It[i][j]
+                index = index + 1
+        
+        At = np.transpose(A)
+        At_A = np.matmul(At, A)
+        x_hat = np.linalg.inv(At_A,np.matmul(At, b)) 
+        flow_vectors.append(x_hat)
     
 
         """ YOUR CODE ENDS HERE """
