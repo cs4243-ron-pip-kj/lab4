@@ -150,8 +150,15 @@ def compute_error(patch1, patch2):
     error = 0
 
     """ YOUR CODE STARTS HERE """
-
-
+    sd1 = np.std(patch1, dtype=np.float64)
+    sd2 = np.std(patch2, dtype=np.float64)
+    mean1 = np.mean(patch1)
+    mean2 = np.mean(patch2)
+    
+    norm_patch1 = (patch1-mean1) / sd1
+    norm_patch2 = (patch2-mean2) / sd2
+    
+    error = np.sum(np.square(norm_patch2-norm_patch1)) / (patch1.shape[0]*patch1.shape[1])
     
 
     """ YOUR CODE ENDS HERE """
