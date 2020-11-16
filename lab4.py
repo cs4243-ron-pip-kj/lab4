@@ -4,6 +4,7 @@ Please read accompanying Jupyter notebook (lab4.ipynb) and PDF (lab4.pdf) for in
 import cv2
 import numpy as np
 import random
+import math
 
 from time import time
 from skimage import filters
@@ -31,8 +32,8 @@ def meanShift(dst, track_window, max_iter=100,stop_thresh=1):
     """ YOUR CODE STARTS HERE """
     shift = float('inf')
     
-    center_x = track_window[2]/2
-    center_y = track_window[3]/2
+    center_x = math.floor(track_window[2]/2)
+    center_y = math.floor(track_window[3]/2)
     
     max_y,max_x = dst.shape
     
@@ -41,20 +42,33 @@ def meanShift(dst, track_window, max_iter=100,stop_thresh=1):
         
         x,y,w,h = track_window
         
-        sum_x = 0.0
-        sum_y = 0.0
-        sum_total = 0.0
+        window = dst[y:y+h,x:x+w]
         
-        #calculate the shift
-        for i in range(w):
-            for j in range(h):
-                if x+i >= 0 and x+i < max_x and y+j >= 0 and y+j < max_y:
-                    sum_x += dst[y+j][x+i] * (i-center_x)
-                    sum_y += dst[y+j][x+i] * (j-center_y)
-                    sum_total += dst[y+j][x+i]
-
-        shift_x = round(sum_x / sum_total)
-        shift_y = round(sum_y / sum_total)
+        start_x = -center_x
+        start_y = -center_y
+        end_x = center_x
+        end_y = center_y
+        
+        if (x < 0):
+            start_x = start_x-x
+        if (y < 0):
+            start_y = start_y-y
+        if (x + w > max_x):
+            end_x = end_x - (x + w - max_x)
+        if (y + h > max_y):
+            end_y = end_y - (y + h - max_y)
+        
+        x_coordinate = np.arange(start_x,end_x+1)
+        y_coordinate = np.arange(start_y,end_y+1)
+        
+        sum_x = window.sum(axis=0)
+        sum_y = window.sum(axis=1)
+        
+        xBarA = np.dot(x_coordinate,sum_x)
+        yBarA = np.dot(y_coordinate,sum_y)
+        
+        shift_x = round(xBarA/np.sum(sum_x))
+        shift_y = round(yBarA/np.sum(sum_y))
 
         #update the point
         track_window = (track_window[0] + shift_x,track_window[1] + shift_y,w,h)
@@ -94,7 +108,6 @@ def IoU(bbox1, bbox2):
     boxA = (w1 + 1) * (h1 + 1)
     boxB = (w2 + 1) * (h2 + 1)
 
-    # areas - the interesection area
     score = interArea / float(boxA + boxB - interArea)
     """ YOUR CODE ENDS HERE """
 
