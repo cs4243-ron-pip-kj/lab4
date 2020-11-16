@@ -29,10 +29,37 @@ def meanShift(dst, track_window, max_iter=100,stop_thresh=1):
     completed_iterations = 0
     
     """ YOUR CODE STARTS HERE """
-
-
+    shift = float('inf')
     
+    center_x = track_window[2]/2
+    center_y = track_window[3]/2
+    
+    max_y,max_x = dst.shape
+    
+    while completed_iterations < max_iter and shift > stop_thresh:
+        completed_iterations += 1
+        
+        x,y,w,h = track_window
+        
+        sum_x = 0.0
+        sum_y = 0.0
+        sum_total = 0.0
+        
+        #calculate the shift
+        for i in range(w):
+            for j in range(h):
+                if x+i >= 0 and x+i < max_x and y+j >= 0 and y+j < max_y:
+                    sum_x += dst[y+j][x+i] * (i-center_x)
+                    sum_y += dst[y+j][x+i] * (j-center_y)
+                    sum_total += dst[y+j][x+i]
 
+        shift_x = round(sum_x / sum_total)
+        shift_y = round(sum_y / sum_total)
+
+        #update the point
+        track_window = (track_window[0] + shift_x,track_window[1] + shift_y,w,h)
+        
+        shift = shift_x**2+shift_y**2
     """ YOUR CODE ENDS HERE """
     
     return track_window
@@ -57,10 +84,18 @@ def IoU(bbox1, bbox2):
     score = 0
 
     """ YOUR CODE STARTS HERE """
+    xA = max(x1, x2)
+    yA = max(y1, y2)
+    xB = min(x1+w1, x2+w2)
+    yB = min(y1+h1, y2+h2)
 
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
 
-    
+    boxA = (w1 + 1) * (h1 + 1)
+    boxB = (w2 + 1) * (h2 + 1)
 
+    # areas - the interesection area
+    score = interArea / float(boxA + boxB - interArea)
     """ YOUR CODE ENDS HERE """
 
     return score
