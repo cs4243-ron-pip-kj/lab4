@@ -275,10 +275,11 @@ def iterative_lucas_kanade(img1, img2, keypoints,
         window_Iy = A[:, 0].reshape((window_size, window_size))
 
         for k in range (num_iters):
-            temp_diff = img1[(y1 - w) : (y1 + w + 1), (x1 - w) : (x1 + w + 1)] - img2[(y1 - w + int(gy) + int(v[1]) ) : (y1 + w + 1 + int(gy) + int(v[1])), (x1 - w + int(gx) + int(v[0])) : (x1 + w + 1 + int(gx) + int(v[0]))]
-            b = np.array([np.sum(temp_diff* window_Ix),np.sum(temp_diff * window_Iy)])
-            v += np.matmul(np.linalg.inv(G), b)
-        
+            I_present = img1[(y1 - w) : (y1 + w + 1), (x1 - w) : (x1 + w + 1)]
+            J_next = img2[(y1 - w + int(gy) + int(v[1]) ) : (y1 + w + 1 + int(gy) + int(v[1])), (x1 - w + int(gx) + int(v[0])) : (x1 + w + 1 + int(gx) + int(v[0]))]
+            temp_diff = I_present - J_next 
+            b_k = np.array([np.sum(temp_diff* window_Ix),np.sum(temp_diff * window_Iy)])
+            v += np.matmul(np.linalg.inv(G), b_k)
     
 
         """ YOUR CODE ENDS HERE """
@@ -321,6 +322,7 @@ def pyramid_lucas_kanade(img1, img2, keypoints,
     g = np.zeros(keypoints.shape)
 
     """ YOUR CODE STARTS HERE """
+
     L_m = level
     
     for L in range(L_m, -1, -1):
@@ -333,7 +335,7 @@ def pyramid_lucas_kanade(img1, img2, keypoints,
         # Guess for next level
         if L != 0:
             g = scale * (g + d)
-            
+
     """ YOUR CODE ENDS HERE """
 
     d = g + d
