@@ -321,10 +321,19 @@ def pyramid_lucas_kanade(img1, img2, keypoints,
     g = np.zeros(keypoints.shape)
 
     """ YOUR CODE STARTS HERE """
-
-
+    L_m = level
     
-
+    for L in range(L_m, -1, -1):
+        # Compute location of p on I^L
+        kp_on_L = keypoints / (scale ** L)
+        
+        # Compute optical flow vector at level L
+        d = iterative_lucas_kanade(pyramid1[L], pyramid2[L], kp_on_L, window_size, num_iters, g)
+        
+        # Guess for next level
+        if L != 0:
+            g = scale * (g + d)
+            
     """ YOUR CODE ENDS HERE """
 
     d = g + d
