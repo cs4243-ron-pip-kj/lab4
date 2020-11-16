@@ -126,7 +126,7 @@ def lucas_kanade(img1, img2, keypoints, window_size=9):
         At_A = np.matmul(At, A)
         x_hat = np.matmul(np.linalg.inv(At_A),np.matmul(At, b))
         flow_vectors.append(x_hat)
-    
+        
 
         """ YOUR CODE ENDS HERE """
 
@@ -158,7 +158,7 @@ def compute_error(patch1, patch2):
     norm_patch1 = (patch1-mean1) / sd1
     norm_patch2 = (patch2-mean2) / sd2
     
-    error = np.sum(np.square(norm_patch2-norm_patch1)) / (patch1.shape[0]*patch1.shape[1])
+    error = np.mean(np.square(norm_patch2-norm_patch1))
     
 
     """ YOUR CODE ENDS HERE """
@@ -207,8 +207,30 @@ def iterative_lucas_kanade(img1, img2, keypoints,
         y1 = int(round(y)); x1 = int(round(x))
         
         """ YOUR CODE STARTS HERE """
+        start_y = y1 - int(window_size/2)
+        start_x = x1 - int(window_size/2)
+        end_y = y1 + int(window_size/2)
+        end_x = x1 + int(window_size/2)
+        
+        A = np.zeros((window_size*window_size, 2))
+        index = 0
+        for i in range(start_y, end_y + 1, 1):
+            for j in range(start_x, end_x + 1, 1):
+                A[index][0] = Iy[i][j]
+                A[index][1] = Ix[i][j]
+                index += 1
 
+        At = np.transpose(A)
+        At_A = np.matmul(At, A) 
+        G = np.array([[At_A[1,1], At_A[0,1]],[At_A[1,0], At_A[0,0]]])
+        window_Ix = A[:, 1].reshape((window_size, window_size))
+        window_Iy = A[:, 0].reshape((window_size, window_size))
 
+        for k in range (num_iters):
+            temp_diff = img1[(y1 - w) : (y1 + w + 1), (x1 - w) : (x1 + w + 1)] - img2[(y1 - w + int(gy) + int(v[1]) ) : (y1 + w + 1 + int(gy) + int(v[1])), (x1 - w + int(gx) + int(v[0])) : (x1 + w + 1 + int(gx) + int(v[0]))]
+            b = np.array([np.sum(temp_diff* window_Ix),np.sum(temp_diff * window_Iy)])
+            v += np.matmul(np.linalg.inv(G), b)
+        
     
 
         """ YOUR CODE ENDS HERE """
